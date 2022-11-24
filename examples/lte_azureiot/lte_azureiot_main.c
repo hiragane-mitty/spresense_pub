@@ -43,6 +43,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include <sys/stat.h>
+#include <sys/boardctl.h>
+#include <arch/board/board.h>
+#include <nuttx/wireless/lte/lte.h>
 #include "azureiot_if.h"
 #include "lte_connection.h"
 #include "mbedtls_if.h"
@@ -88,6 +91,8 @@ static int  s_cert_file_size;
 static char IoTHubName[AZURE_IOT_INFO_NAME_MAX_SIZE];
 static char DeviceID[AZURE_IOT_INFO_ID_MAX_SIZE];
 static char PrimaryKey[AZURE_IOT_INFO_PRIKEY_MAX_SIZE];
+
+lte_quality_t lte_quality;
 
 /****************************************************************************
  * Private Functions
@@ -1029,6 +1034,7 @@ int main(int argc, FAR char *argv[])
     }
 
   printf("LTE connect...OK\n\n");
+  lte_get_quality_sync(&lte_quality);
 
   switch (select)
     {
@@ -1069,4 +1075,30 @@ int main(int argc, FAR char *argv[])
   printf("LTE disconnect...OK\n\n");
 
   return 0;
+}
+
+int lte_azureiot_main(int argc, FAR char *argv[]);
+int alarm_main(int argc, FAR char *argv[]);
+
+int lte_azureiot_test(int argc, FAR char *argv[])
+{
+  char *lte_azureiot_cmd[] = { "lte_azureiot", "upload", "/mnt/sd0/test.txt", "test.txt" };
+  char *alarm_cmd[] = { "alarm", "5" };
+
+  boardctl(BOARDIOC_INIT, 0);
+  sleep(3); /* Wait for microSD */
+
+  if (lte_azureiot_main(4, lte_azureiot_cmd) == 0)
+    {
+      printf("RSRP:%d,RSRQ:%d,SINR:%d,RSSI:%d,Time(sec):%lu\n",
+             lte_quality.rsrp, lte_quality.rsrq,
+             lte_quality.sinr, lte_quality.rssi,
+             g_system_timer * CONFIG_USEC_PER_TICK / 1000000);
+    }
+
+  alarm_main(2, alarm_cmd);
+  fflush(stdout);
+  sleep(1);
+
+  return boardctl(BOARDIOC_POWEROFF, BOARD_POWEROFF_DEEP);
 }
