@@ -136,6 +136,26 @@ static uint8_t data_pdn_sid = LTE_PDN_SESSIONID_INVALID_ID;
  ****************************************************************************/
 
 /****************************************************************************
+ * Name: app_lte_report_cellinfo
+ ****************************************************************************/
+
+static void app_lte_report_cellinfo(lte_cellinfo_t *cellinfo)
+{
+  printf("[Cellinfo] valid : %d\n", cellinfo->valid);
+  printf("[Cellinfo] phycell_id : %d\n", cellinfo->phycell_id);
+  printf("[Cellinfo] earfcn : %d\n", cellinfo->earfcn);
+  printf("[Cellinfo] mcc : %d%d%d\n", cellinfo->mcc[0], cellinfo->mcc[1], cellinfo->mcc[2]);
+  if (cellinfo->mnc_digit == 2)
+    {
+      printf("[Cellinfo] mnc : %d%d\n", cellinfo->mnc[0], cellinfo->mnc[1]);
+    }
+  else
+    {
+      printf("[Cellinfo] mnc : %d%d%d\n", cellinfo->mnc[0], cellinfo->mnc[1], cellinfo->mnc[2]);
+    }
+}
+
+/****************************************************************************
  * Name: app_lte_setlocaltime
  ****************************************************************************/
 
@@ -712,6 +732,8 @@ int app_lte_connect_to_lte(void)
       printf("Failed to set radio on :%d\n", ret);
       goto errout_with_lte_fin;
     }
+
+  lte_set_report_cellinfo(app_lte_report_cellinfo, 1);
 
   /* Get the session ID. If successful, it means already attached. */
 

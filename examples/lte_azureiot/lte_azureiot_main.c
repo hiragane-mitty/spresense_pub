@@ -49,6 +49,11 @@
 #include "azureiot_if.h"
 #include "lte_connection.h"
 #include "mbedtls_if.h"
+#ifndef ENABLE_FILE_OPERATION
+#include "test.h"
+#include "pem.h"
+#include "resources.h"
+#endif
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -83,15 +88,17 @@
 
 /* Certificate file deployment location and buffer size */
 
+#ifdef ENABLE_FILE_OPERATION
 static char s_cert_file[8192];
+#endif
 static int  s_cert_file_size;
-
+#ifdef ENABLE_FILE_OPERATION
 /* Azure resources */
 
 static char IoTHubName[AZURE_IOT_INFO_NAME_MAX_SIZE];
 static char DeviceID[AZURE_IOT_INFO_ID_MAX_SIZE];
 static char PrimaryKey[AZURE_IOT_INFO_PRIKEY_MAX_SIZE];
-
+#endif
 lte_quality_t lte_quality;
 
 /****************************************************************************
@@ -181,11 +188,11 @@ static char *fgets_with_trim(char *target, int size, FILE *fp)
 /* ------------------------------------------------------------------------ */
 static int open_azureiot_file(const char *file_name)
 {
+#ifdef ENABLE_FILE_OPERATION
   /* Get Azure information from file. */
 
   FILE* fp  = fopen(file_name, "r");
   int   res = -1;
-
   if (fp == NULL)
     {
       printf("Fail: Open Azure resource file [%s]\n", file_name);
@@ -208,7 +215,9 @@ static int open_azureiot_file(const char *file_name)
     }
 
   fclose(fp);
-
+#else
+  int res = 0;
+#endif
   return res;
 }
 
@@ -501,6 +510,7 @@ static int recv_message(struct azureiot_info *info,
 /* ------------------------------------------------------------------------ */
 static int filelength(const char *file_name)
 {
+#ifdef ENABLE_FILE_OPERATION
   struct stat st;
 
   if (stat(file_name, &st))
@@ -514,6 +524,9 @@ static int filelength(const char *file_name)
     }
 
   return (int)st.st_size;
+#else
+  return sizeof(test_txt_data);
+#endif
 }
 
 /* ------------------------------------------------------------------------ */
@@ -652,15 +665,17 @@ static int upload(struct azureiot_info *info,
 
   size_t  size;
   size_t  upload_size = 0;
-
+#ifdef ENABLE_FILE_OPERATION
   FILE   *fp = fopen(src_filename, "rb");
 
   if (fp)
     {
+#endif
       printf("Upload start\n");
 
       while (1)
         {
+#ifdef ENABLE_FILE_OPERATION
           size = fread(io_buffer + len, 1, sizeof(io_buffer) - len, fp);
 
           if (size == 0)
@@ -669,7 +684,19 @@ static int upload(struct azureiot_info *info,
 
               break;
             }
+#else
+          if (upload_size + sizeof(io_buffer) < sizeof(test_txt_data))
+            {
+              memcpy(io_buffer, &test_txt_data[upload_size], sizeof(io_buffer));
+              size = sizeof(io_buffer);
+            }
+          else
+            {
+              printf("Upload end\n");
 
+              break;
+            }
+#endif
           upload_size += size;
 
           printf("%d/%d\n", upload_size, file_size);
@@ -681,10 +708,10 @@ static int upload(struct azureiot_info *info,
 
           len = 0;
         }
-
+#ifdef ENABLE_FILE_OPERATION
       fclose(fp);
     }
-
+#endif
   /* Get HTTP respons */
 
   tls_http_respons_read(io_buffer, sizeof(io_buffer));
@@ -925,6 +952,7 @@ errout:
 /* ------------------------------------------------------------------------ */
 static int extract_certificate_file(const char *cert_file)
 {
+#ifdef ENABLE_FILE_OPERATION
   FILE  *fp = fopen(cert_file, "rb");
 
   if (fp == NULL)
@@ -937,7 +965,9 @@ static int extract_certificate_file(const char *cert_file)
   s_cert_file_size = fread(s_cert_file, 1, sizeof(s_cert_file), fp);
 
   fclose(fp);
-
+#else
+  s_cert_file_size = sizeof(s_cert_file);
+#endif
   return OK;
 }
 

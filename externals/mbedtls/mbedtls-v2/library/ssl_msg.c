@@ -2518,6 +2518,7 @@ void mbedtls_ssl_send_flight_completed( mbedtls_ssl_context *ssl )
  */
 int mbedtls_ssl_write_handshake_msg( mbedtls_ssl_context *ssl )
 {
+    printf("mbedtls_ssl_write_handshake_msg start\n");
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     const size_t hs_len = ssl->out_msglen - 4;
     const unsigned char hs_type = ssl->out_msg[0];
@@ -2660,6 +2661,7 @@ int mbedtls_ssl_write_handshake_msg( mbedtls_ssl_context *ssl )
 
     MBEDTLS_SSL_DEBUG_MSG( 2, ( "<= write handshake message" ) );
 
+    printf("mbedtls_ssl_write_handshake_msg end\n");
     return( 0 );
 }
 
@@ -5743,6 +5745,7 @@ static int ssl_write_split( mbedtls_ssl_context *ssl,
  */
 int mbedtls_ssl_write( mbedtls_ssl_context *ssl, const unsigned char *buf, size_t len )
 {
+    printf("mbedtls_ssl_write start\n");
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     MBEDTLS_SSL_DEBUG_MSG( 2, ( "=> write" ) );
@@ -5775,6 +5778,7 @@ int mbedtls_ssl_write( mbedtls_ssl_context *ssl, const unsigned char *buf, size_
 
     MBEDTLS_SSL_DEBUG_MSG( 2, ( "<= write" ) );
 
+    printf("mbedtls_ssl_write end\n");
     return( ret );
 }
 

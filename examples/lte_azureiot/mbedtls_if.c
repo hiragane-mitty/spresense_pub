@@ -140,6 +140,7 @@ int tls_connect(const char *hostname, char *certs_buf, int certs_buf_size)
 
   int   i;
 
+  printf("mbedtls_net_connect start\n");
   for (i = 10; 0 < i; i--)
     {
       if (mbedtls_net_connect(&g_server_fd,
@@ -154,6 +155,8 @@ int tls_connect(const char *hostname, char *certs_buf, int certs_buf_size)
       sleep(1);
     }
 
+  printf("mbedtls_net_connect end\n");
+
   if (i == 0)
     {
       printf("mbedtls_net_connect() fail\n");
@@ -166,6 +169,7 @@ int tls_connect(const char *hostname, char *certs_buf, int certs_buf_size)
                       mbedtls_net_recv,
                       NULL);
 
+  printf("mbedtls_ssl_handshake start\n");
   /* Do SSL handshake */
 
   for (i = 10; 0 < i; i--)
@@ -178,6 +182,7 @@ int tls_connect(const char *hostname, char *certs_buf, int certs_buf_size)
       printf("mbedtls_ssl_handshake() retry\n");
       sleep(1);
     }
+  printf("mbedtls_ssl_handshake end\n");
 
   if (i == 0)
     {
