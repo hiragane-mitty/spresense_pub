@@ -1,0 +1,26 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_LTE_TCP_CONNECT
+	tristate "TCP connect over LTE"
+	default n
+	---help---
+		Enable the Azure IoT using LTE example
+
+if EXAMPLES_LTE_TCP_CONNECT
+
+config EXAMPLES_LTE_TCP_CONNECT_PROGNAME
+	string "Program name"
+	default "lte_tcp_connect"
+
+config EXAMPLES_LTE_TCP_CONNECT_PRIORITY
+	int "Task priority"
+	default 100
+
+config EXAMPLES_LTE_TCP_CONNECT_STACKSIZE
+	int "Stack size"
+	default 4096
+
+endif
